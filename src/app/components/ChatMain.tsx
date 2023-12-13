@@ -43,8 +43,6 @@ const ChatMain: React.FC = () => {
 		}
 	};
 
-	const makeShared = () => {};
-
 	const leaveRoom = () => {
 		setDisplayLeaveRoom(false);
 		if (room) {

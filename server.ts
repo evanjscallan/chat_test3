@@ -34,6 +34,10 @@ io.on('connection', (socket) => {
 });
     socket.on('leave-room', (roomName) => {
         socket.leave(roomName)
+        const index = roomUsers.indexOf(socket.id)
+        
+            roomUsers.splice(index, 1)
+       
         console.log(`Client id: ${socket.id} left room ${roomName}`)
         //Slight delay to ensure leave operation completes
         process.nextTick(() => {
@@ -41,6 +45,7 @@ io.on('connection', (socket) => {
             if (roomID) {
                 const numberOfClients = roomID.size;
                 console.log(`Number of clients in room ${roomName}: ${numberOfClients}`);
+                console.log('room users: ', roomUsers)
                 if (numberOfClients <= 1) {
                     isShared = false
                     console.log('Room size equal to or smaller than 1. isShared set to false')
