@@ -9,8 +9,9 @@ First, run the Node.js server:
 
 ```bash
 npm start:socket
+```
 
-First, run the Next.js development server:
+Second, run the Next.js development server:
 
 ```bash
 npm run dev
