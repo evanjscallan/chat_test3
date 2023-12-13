@@ -10,8 +10,6 @@ const ChatMain: React.FC = () => {
 	const [socket, setSocket] = useState<any>(null);
 	const [allMessages, setAllMessages] = useState<string[]>([]);
 	const [currentMessage, setCurrentMessage] = useState('');
-	const [isShared, setIsShared] = useState<boolean>(false);
-	const [users, setUsers] = useState<string[]>([]);
 
 	useEffect(() => {
 		const newSocket = io(SOCKET_SERVER_URL);
@@ -37,8 +35,8 @@ const ChatMain: React.FC = () => {
 	};
 
 	const joinRoom = () => {
-		setDisplayLeaveRoom(true);
 		if (room !== '') {
+			setDisplayLeaveRoom(true);
 			socket.emit('join-room', room);
 		}
 	};
@@ -55,38 +53,49 @@ const ChatMain: React.FC = () => {
 	return (
 		<>
 			<div>
-				<div>
+				<div className="chatBox">
+					{displayLeaveRoom ? (
+						<></>
+					) : (
+						<h2>Enter Room Number Below To Join Chat</h2>
+					)}
 					{allMessages.map((message, index) => (
 						<p key={index}>{message}</p>
 					))}
 				</div>
-
-				<input
-					title="current-message"
-					type="text"
-					value={currentMessage}
-					onChange={(e) => setCurrentMessage(e.target.value)}
-					onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-				/>
-				<button onClick={sendMessage}>Send</button>
-
 				<div>
 					{displayLeaveRoom ? (
-						<div>
-							<button onClick={leaveRoom}>Leave Room</button>
+						<div className="chat-buttons">
+							<input
+								title="current-message"
+								type="text"
+								value={currentMessage}
+								onChange={(e) => setCurrentMessage(e.target.value)}
+								onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+							/>
+							<button onClick={sendMessage}>Send</button>
 						</div>
 					) : (
-						<div>
-							<input
-								title="room-input"
-								type="text"
-								value={room}
-								onChange={(e) => setRoom(e.target.value)}
-								onKeyDown={(e) => e.key === 'Enter' && joinRoom()}
-							/>
-							<button onClick={joinRoom}>Join Room</button>
-						</div>
+						<></>
 					)}
+					<div>
+						{displayLeaveRoom ? (
+							<div className="chat-buttons">
+								<button onClick={leaveRoom}>Leave Room</button>
+							</div>
+						) : (
+							<div className="join-room">
+								<input
+									title="room-input"
+									type="text"
+									value={room}
+									onChange={(e) => setRoom(e.target.value)}
+									onKeyDown={(e) => e.key === 'Enter' && joinRoom()}
+								/>
+								<button onClick={joinRoom}>Join Room</button>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 		</>

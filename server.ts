@@ -19,7 +19,6 @@ io.on('connection', (socket) => {
     socket.on('join-room', (roomName) => {
         socket.join(roomName)
         roomUsers.push(socket.id)
-       
         console.log(`Client joined room: ${roomName}`)
         const roomID = io.sockets.adapter.rooms.get(roomName);
         if (roomID) {
