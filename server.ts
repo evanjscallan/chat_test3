@@ -1,28 +1,32 @@
-import http from 'http';
+import http, { Server } from 'http';
+import { Message } from 'postcss';
 import { Server as SocketIOServer } from 'socket.io'
 
-const port = process.env.SOCKET_PORT ? parseInt(process.env.SOCKET_PORT) : 4000;
-const server = http.createServer();
+const port: number | "4000" | "3000" = process.env.SOCKET_PORT ? parseInt(process.env.SOCKET_PORT) : 4000;
+const server: Server = http.createServer();
 
-
-
-const io = new SocketIOServer(server, {
+const io: SocketIOServer = new SocketIOServer(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
+
 let roomUsers: string[] = []
 io.on('connection', (socket) => {
     let isShared: boolean = false 
+    socket.on('create-user', (socket, usernameData) => {
+        socket.username = usernameData
+        console.log()
+    });
     socket.on('join-room', (roomName) => {
         socket.join(roomName)
         roomUsers.push(socket.id)
         console.log(`Client joined room: ${roomName}`)
-        const roomID = io.sockets.adapter.rooms.get(roomName);
+        const roomID: Set<string> | undefined = io.sockets.adapter.rooms.get(roomName);
         if (roomID) {
-            const numberOfClients = roomID.size;
+            const numberOfClients: number = roomID.size;
             console.log(`Number of clients in room ${roomName}: ${numberOfClients}`);
             if (numberOfClients > 1) {
                 isShared = true
@@ -31,16 +35,14 @@ io.on('connection', (socket) => {
         }
         console.log('room users: ', roomUsers)
 });
-    socket.on('leave-room', (roomName) => {
+    socket.on('leave-room', (roomName: string) => {
         socket.leave(roomName)
-        const index = roomUsers.indexOf(socket.id)
-        
+        const index: number = roomUsers.indexOf(socket.id)
             roomUsers.splice(index, 1)
-       
         console.log(`Client id: ${socket.id} left room ${roomName}`)
         //Slight delay to ensure leave operation completes
         process.nextTick(() => {
-            const roomID = io.sockets.adapter.rooms.get(roomName);
+            const roomID: Set<string> | string | undefined = io.sockets.adapter.rooms.get(roomName);
             if (roomID) {
                 const numberOfClients = roomID.size;
                 console.log(`Number of clients in room ${roomName}: ${numberOfClients}`);
@@ -55,13 +57,12 @@ io.on('connection', (socket) => {
             io.to(roomName).emit('user left', `A user has left the room: ${roomName}`);
         })
     })
-    socket.on('chat-message', (data) => {
-        const room = data.room
-        const message = data.message
+    socket.on('chat-message', (data: Message) => {
         // Broadcasting message to all connected clients in room
-        if (room && message) {
-            io.to(data.room).emit('chat-message', message);
-                console.log('Received message:', message);
+        if (data.room && data.message) {
+            io.to(data.room).emit('chat-message', data);
+            console.log('From: ', data.username)
+            console.log('Received message:', data.message)
             }
     });
     socket.on('disconnect', () => {

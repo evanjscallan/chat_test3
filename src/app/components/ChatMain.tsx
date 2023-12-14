@@ -1,32 +1,42 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import React, { useState, useEffect, ReactNode } from 'react';
+import { Socket, io } from 'socket.io-client';
 
 const SOCKET_SERVER_URL = 'http://localhost:4000';
 
-const ChatMain: React.FC = () => {
+interface Message {
+	room: string;
+	username: string;
+	message: string;
+}
+
+const ChatMain: React.FC = (): ReactNode => {
 	const [room, setRoom] = useState<string>('');
 	const [displayLeaveRoom, setDisplayLeaveRoom] = useState<boolean>(false);
 	const [socket, setSocket] = useState<any>(null);
-	const [allMessages, setAllMessages] = useState<string[]>([]);
-	const [currentMessage, setCurrentMessage] = useState('');
+	const [allMessages, setAllMessages] = useState<Message[]>([]);
+	const [currentMessage, setCurrentMessage] = useState<string>('');
+	const [tempUsername, setTempUsername] = useState<string>('');
+	const [username, setUsername] = useState<string>('');
 
 	useEffect(() => {
-		const newSocket = io(SOCKET_SERVER_URL);
+		const newSocket: Socket = io(SOCKET_SERVER_URL);
 		setSocket(newSocket);
-		newSocket.on('chat-message', (message: string) => {
-			setAllMessages((prevMessages) => [...prevMessages, message]);
+		newSocket.on('chat-message', (message: Message) => {
+			console.log('Message data structure:', message);
+			setAllMessages((prevMessages: any) => [...prevMessages, message]);
+			console.log(allMessages);
 		});
-
 		return () => {
-			newSocket.disconnect();
+			newSocket.off();
 		};
 	}, []);
 
-	const sendMessage = () => {
+	const sendMessage = (): void => {
 		if (currentMessage !== '') {
 			const messageData = {
-				room,
+				room: room,
+				username: username,
 				message: currentMessage,
 			};
 			socket.emit('chat-message', messageData);
@@ -34,19 +44,30 @@ const ChatMain: React.FC = () => {
 		}
 	};
 
-	const joinRoom = () => {
+	const setUsernameAndClear = (): void => {
+		setUsername(tempUsername);
+		setTempUsername('');
+	};
+
+	const joinRoom = (): void => {
 		if (room !== '') {
+			setUsernameAndClear();
 			setDisplayLeaveRoom(true);
 			socket.emit('join-room', room);
 		}
 	};
 
-	const leaveRoom = () => {
+	const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setTempUsername(event.target.value);
+	};
+
+	const leaveRoom = (): void => {
 		setDisplayLeaveRoom(false);
 		if (room) {
 			socket.emit('leave-room', room);
 		}
 		setRoom('');
+		setUsername('');
 		setAllMessages([]);
 	};
 
@@ -57,23 +78,32 @@ const ChatMain: React.FC = () => {
 					{displayLeaveRoom ? (
 						<></>
 					) : (
-						<h2>Enter Room Number Below To Join Chat</h2>
+						<>
+							<h2>Enter Room Number Below To Join Chat</h2>
+						</>
 					)}
-					{allMessages.map((message, index) => (
-						<p key={index}>{message}</p>
-					))}
+					{allMessages.map((msg, index: number) => {
+						return (
+							<p key={index}>
+								{msg.username}: {msg.message}
+							</p>
+						);
+					})}
 				</div>
 				<div>
 					{displayLeaveRoom ? (
-						<div className="chat-buttons">
+						<div className="chat-buttons rounded-tl-sm rounded-tr-sm">
 							<input
-								title="current-message"
+								title="current-message rounded-bl-sm rounded-br-sm"
 								type="text"
 								value={currentMessage}
+								disabled={!username}
 								onChange={(e) => setCurrentMessage(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
 							/>
-							<button onClick={sendMessage}>Send</button>
+							<button onClick={sendMessage} disabled={!username}>
+								Send
+							</button>
 						</div>
 					) : (
 						<></>
@@ -81,12 +111,22 @@ const ChatMain: React.FC = () => {
 					<div>
 						{displayLeaveRoom ? (
 							<div className="chat-buttons">
-								<button onClick={leaveRoom}>Leave Room</button>
+								<button className="rounded-sm" onClick={leaveRoom}>
+									Leave Room
+								</button>
 							</div>
 						) : (
 							<div className="join-room">
 								<input
+									className="border-b-[3px] rounded-tl-sm rounded-tr-sm"
+									type="text"
+									value={tempUsername}
+									onChange={handleUsernameChange}
+									placeholder="Enter your username"
+								/>
+								<input
 									title="room-input"
+									placeholder="Enter room number..."
 									type="text"
 									value={room}
 									onChange={(e) => setRoom(e.target.value)}
