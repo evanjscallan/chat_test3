@@ -50,7 +50,7 @@ const ChatMain: React.FC = (): ReactNode => {
 	};
 
 	const joinRoom = (): void => {
-		if (room !== '') {
+		if (room !== '' && tempUsername !== '') {
 			setUsernameAndClear();
 			setDisplayLeaveRoom(true);
 			socket.emit('join-room', room);
@@ -76,7 +76,10 @@ const ChatMain: React.FC = (): ReactNode => {
 			<div className="test">
 				<div className="chatBox">
 					{displayLeaveRoom ? (
-						<></>
+						<p className="chat-box-content-room-number">
+							{' '}
+							Room Number: {room}{' '}
+						</p>
 					) : (
 						<>
 							<h2>Enter Room Number Below To Join Chat</h2>
@@ -84,30 +87,38 @@ const ChatMain: React.FC = (): ReactNode => {
 					)}
 					{allMessages.map((msg, index: number) => {
 						return (
-							<p key={index}>
+							<p className="chat-box-content" key={index}>
 								{msg.username}: {msg.message}
 							</p>
 						);
 					})}
-				</div>
-				<div>
 					{displayLeaveRoom ? (
-						<div className="chat-buttons rounded-tl-sm rounded-tr-sm">
-							<input
-								title="current-message rounded-bl-sm rounded-br-sm"
-								type="text"
-								value={currentMessage}
-								disabled={!username}
-								onChange={(e) => setCurrentMessage(e.target.value)}
-								onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-							/>
-							<button onClick={sendMessage} disabled={!username}>
-								Send
-							</button>
+						<div className="room-chat-bottom-UI">
+							<div className="send-input-div">
+								<input
+									placeholder="Enter Message..."
+									title="current-message"
+									type="text"
+									value={currentMessage}
+									disabled={!username}
+									onChange={(e) => setCurrentMessage(e.target.value)}
+									onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+								/>
+							</div>
+							<div className="send-div">
+								<img
+									className="send-button"
+									onClick={sendMessage}
+									title="send"
+									src="icons8-send-material-outlined-96.png"
+								/>
+							</div>
 						</div>
 					) : (
 						<></>
 					)}
+				</div>
+				<div>
 					<div>
 						{displayLeaveRoom ? (
 							<div className="chat-buttons">
