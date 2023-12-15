@@ -73,7 +73,7 @@ const ChatMain: React.FC = (): ReactNode => {
 
 	return (
 		<>
-			<div>
+			<div className="test">
 				<div className="chatBox">
 					{displayLeaveRoom ? (
 						<></>
@@ -122,7 +122,7 @@ const ChatMain: React.FC = (): ReactNode => {
 									type="text"
 									value={tempUsername}
 									onChange={handleUsernameChange}
-									placeholder="Enter your username"
+									placeholder="Enter your username..."
 								/>
 								<input
 									title="room-input"
