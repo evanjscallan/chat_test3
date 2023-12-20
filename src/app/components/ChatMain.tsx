@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Socket, io } from 'socket.io-client';
+import InviteElement from './InviteElement';
 
 const SOCKET_SERVER_URL = 'http://localhost:4000';
 
@@ -10,7 +11,7 @@ interface Message {
 	message: string;
 }
 
-const ChatMain: React.FC = (): ReactNode => {
+const ChatMain = () => {
 	const [room, setRoom] = useState<string>('');
 	const [displayLeaveRoom, setDisplayLeaveRoom] = useState<boolean>(false);
 	const [socket, setSocket] = useState<any>(null);
@@ -148,6 +149,7 @@ const ChatMain: React.FC = (): ReactNode => {
 						)}
 					</div>
 				</div>
+				<InviteElement roomNumber={room} />
 			</div>
 		</>
 	);
